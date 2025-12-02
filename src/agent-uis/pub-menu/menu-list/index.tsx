@@ -35,6 +35,7 @@ export default function MenuList({
 }) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [itemToOrder, setItemToOrder] = useState<MenuItem | null>(null);
 
   // Handle different API response structures
   const extractCategories = (data: MenuData): MenuCategory[] => {
@@ -165,41 +166,43 @@ export default function MenuList({
               </p>
             </div>
 
-            {/* Menu Items Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(selectedCategory ? filteredItems : allItems).map((item, index) => (
-                <div
-                  key={item.MenuItemID || index}
-                  onClick={() => setSelectedItem(item)}
-                  className="border rounded-lg p-4 cursor-pointer hover:border-amber-300 hover:shadow-md transition-all"
-                >
-                  {item.MenuItemImage && (
-                    <div className="w-full h-32 bg-gray-200 rounded-md mb-3 overflow-hidden">
-                      <img
-                        src={item.MenuItemImage}
-                        alt={item.MenuItemName || "Menu item"}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    </div>
-                  )}
-                  <h4 className="font-semibold text-gray-900 mb-1">
-                    {item.MenuItemName || "Unnamed Item"}
-                  </h4>
-                  {item.MenuItemPrice !== undefined && (
-                    <p className="text-amber-600 font-semibold">
-                      ${item.MenuItemPrice.toFixed(2)}
-                    </p>
-                  )}
-                  {item.MenuItemDescription && (
-                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                      {item.MenuItemDescription}
-                    </p>
-                  )}
-                </div>
-              ))}
+            {/* Menu Items Horizontal Scroll */}
+            <div className="overflow-x-auto pb-4">
+              <div className="flex gap-4 min-w-max">
+                {(selectedCategory ? filteredItems : allItems).map((item, index) => (
+                  <div
+                    key={item.MenuItemID || index}
+                    onClick={() => setItemToOrder(item)}
+                    className="border rounded-lg p-4 cursor-pointer hover:border-amber-300 hover:shadow-md transition-all flex-shrink-0 w-64"
+                  >
+                    {item.MenuItemImage && (
+                      <div className="w-full h-32 bg-gray-200 rounded-md mb-3 overflow-hidden">
+                        <img
+                          src={item.MenuItemImage}
+                          alt={item.MenuItemName || "Menu item"}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      </div>
+                    )}
+                    <h4 className="font-semibold text-gray-900 mb-1">
+                      {item.MenuItemName || "Unnamed Item"}
+                    </h4>
+                    {item.MenuItemPrice !== undefined && (
+                      <p className="text-amber-600 font-semibold">
+                        ${item.MenuItemPrice.toFixed(2)}
+                      </p>
+                    )}
+                    {item.MenuItemDescription && (
+                      <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                        {item.MenuItemDescription}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {allItems.length === 0 && (
@@ -210,6 +213,51 @@ export default function MenuList({
           </>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      {itemToOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Confirm Order
+              </h3>
+              <div className="mb-4">
+                <p className="text-gray-700 mb-2">
+                  <span className="font-semibold">{itemToOrder.MenuItemName || "This item"}</span>
+                  {itemToOrder.MenuItemPrice !== undefined && (
+                    <span className="text-amber-600 ml-2">
+                      - ${itemToOrder.MenuItemPrice.toFixed(2)}
+                    </span>
+                  )}
+                </p>
+                <p className="text-gray-600">
+                  Do you want me to order this for you?
+                </p>
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setItemToOrder(null)}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // Handle order confirmation here
+                    setItemToOrder(null);
+                    // You can add order logic here
+                    alert(`Order confirmed for ${itemToOrder.MenuItemName}!`);
+                  }}
+                  className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                >
+                  Yes, Order It
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
